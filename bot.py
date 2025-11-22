@@ -77,9 +77,9 @@ def count_study_days(today):
 async def start(message: types.Message):
     subscribed_users.add(message.chat.id)
     await message.answer(
-        "Зачем тебе это? Тебе делать нечего? Лучше выключить меня и не париться. "
-        "Чтобы выключить — напиши /stop."
-        "Статистика по дням — напиши /stat"
+        "Зачем тебе это? Тебе делать нечего? Лучше выключить меня и не париться.\n"
+        "Чтобы выключить — напиши /stop\n"
+        "Статистика по дням — напиши /stat\n"
     )
 
 @dp.message(Command("stop"))
