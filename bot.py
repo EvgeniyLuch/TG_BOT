@@ -120,5 +120,7 @@ async def daily_notifications():
 
 
 async def run_bot():
+    await bot.delete_webhook(drop_pending_updates=True)
     asyncio.create_task(daily_notifications())
     await dp.start_polling(bot)
+
