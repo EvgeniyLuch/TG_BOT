@@ -9,7 +9,7 @@ from aiogram.filters import Command
 # ==============================================
 
 API_TOKEN = os.getenv("TG_TOKEN")
-END_DATE = datetime.date(2029, 12, 28)
+END_DATE = datetime.date(2029, 5, 28)
 
 # Праздники Узбекистана
 UZ_HOLIDAYS = {
@@ -39,7 +39,7 @@ def is_winter_break(date):
     return date.month == 1
 
 def is_summer_break(date):
-    return date.month in (7, 8)
+    return date.month in (6, 7, 8)
 
 def is_end_of_year_break(date):
     return date.month == 12 and date.day >= 28
@@ -171,4 +171,5 @@ async def run_bot():
     asyncio.create_task(daily_notifications())
 
     # запускаем polling
+
     await dp.start_polling(bot)
