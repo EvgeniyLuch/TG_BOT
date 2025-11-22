@@ -1,9 +1,10 @@
 import datetime
 import asyncio
+import os
 from aiogram import Bot, Dispatcher, types
 from aiogram.filters import Command
 
-API_TOKEN = "8508235166:AAE63_gkhzlHjT8VRMdAm97A1n9UVgVgYMU"
+API_TOKEN = os.getenv("TG_TOKEN")
 
 bot = Bot(token=API_TOKEN)
 dp = Dispatcher()
@@ -86,8 +87,6 @@ async def daily_notifications():
         await asyncio.sleep(86400)
 
 
-async def main():
+async def run_bot():
     asyncio.create_task(daily_notifications())
     await dp.start_polling(bot)
-
-asyncio.run(main())
