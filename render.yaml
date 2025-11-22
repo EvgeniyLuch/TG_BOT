@@ -1,8 +1,11 @@
 services:
-  - type: web
+  - type: worker
     name: tg-bot
     env: python
     plan: hobby
     buildCommand: "pip install -r requirements.txt"
-    startCommand: "uvicorn main:app --host 0.0.0.0 --port $PORT"
+    startCommand: "python bot.py"
     autoDeploy: true
+    envVars:
+      - key: TG_TOKEN
+        sync: false
