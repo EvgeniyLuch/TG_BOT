@@ -1,3 +1,5 @@
+import os
+print("TG_TOKEN =", repr(os.getenv("TG_TOKEN")))
 import datetime
 import asyncio
 import os
@@ -90,3 +92,4 @@ async def daily_notifications():
 async def run_bot():
     asyncio.create_task(daily_notifications())
     await dp.start_polling(bot)
+
