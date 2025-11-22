@@ -4,7 +4,7 @@ services:
     env: python
     plan: hobby
     buildCommand: "pip install -r requirements.txt"
-    startCommand: "python bot_run.py"
+    startCommand: "uvicorn main:app --host 0.0.0.0 --port 10000"
     autoDeploy: true
     envVars:
       - key: TG_TOKEN
