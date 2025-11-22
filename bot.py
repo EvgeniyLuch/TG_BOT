@@ -1,14 +1,12 @@
+# bot.py
 import datetime
 import asyncio
 import os
 from aiogram import Bot, Dispatcher, types
 from aiogram.filters import Command
 
-# ==============================================
-#              CONFIG
-# ==============================================
-
 API_TOKEN = os.getenv("TG_TOKEN")
+
 END_DATE = datetime.date(2029, 5, 28)
 
 # Праздники Узбекистана
@@ -24,14 +22,10 @@ UZ_HOLIDAYS = {
 bot = Bot(token=API_TOKEN)
 dp = Dispatcher()
 
-# Храним подписанных пользователей
+# Подписанные пользователи (в памяти)
 subscribed_users = set()
 
-
-# ==============================================
-#              КАЛЕНДАРЬ / ЛОГИКА
-# ==============================================
-
+# ---- календарная логика ----
 def is_holiday(date: datetime.date):
     return (date.month, date.day) in UZ_HOLIDAYS
 
@@ -55,7 +49,6 @@ def is_study_day(date):
     if is_end_of_year_break(date): return False
     return True
 
-
 def count_total_days(today):
     return (END_DATE - today).days
 
@@ -68,33 +61,26 @@ def count_study_days(today):
         d += datetime.timedelta(days=1)
     return days
 
-
-# ==============================================
-#              ХЕНДЛЕРЫ
-# ==============================================
-
+# ---- хендлеры ----
 @dp.message(Command("start"))
-async def start(message: types.Message):
+async def start_handler(message: types.Message):
     subscribed_users.add(message.chat.id)
     await message.answer(
-        "Зачем тебе это? Тебе делать нечего? Лучше выключить меня и не париться.\n"
-        "Чтобы выключить — напиши /stop\n"
-        "Статистика по дням — напиши /stat\n"
+        "Ты подписался на ежедневные уведомления! Чтобы выключить — напиши /stop.\n"
+        "Статистика по дням — напиши /stat"
     )
 
 @dp.message(Command("stop"))
-async def stop(message: types.Message):
+async def stop_handler(message: types.Message):
     subscribed_users.discard(message.chat.id)
     await message.answer("Уведомления выключены.")
 
 @dp.message(Command("stat"))
-async def stat(message: types.Message):
+async def stat_handler(message: types.Message):
     today = datetime.datetime.now().date()
-
     remaining_days = count_total_days(today)
     remaining_study_days = count_study_days(today)
 
-    # определяем статус сегодняшнего дня
     if is_study_day(today):
         base = "Сегодня учебный день."
     elif is_weekend(today):
@@ -113,23 +99,15 @@ async def stat(message: types.Message):
         f"📅 Осталось дней: {remaining_days}\n"
         f"📘 Осталось учебных дней: {remaining_study_days}"
     )
-
     await message.answer(text)
 
-
-# ==============================================
-#              ЕЖЕДНЕВНЫЕ ОПОВЕЩЕНИЯ
-# ==============================================
-
+# ---- daily notifications (фон) ----
 async def daily_notifications():
+    # Фоновая задача, запускается в main.on_startup
     while True:
-        today = datetime.datetime.now().date()
+        now = datetime.datetime.now()
+        today = now.date()
 
-        # подсчёт
-        remaining_days = count_total_days(today)
-        remaining_study_days = count_study_days(today)
-
-        # текст
         if is_study_day(today):
             base = "📚 Ещё минус один учебный день!"
         elif is_weekend(today):
@@ -145,31 +123,16 @@ async def daily_notifications():
 
         text = (
             f"{base}\n\n"
-            f"📅 Общее количество дней: {remaining_days} дней\n"
-            f"📘 Только учебные дни: {remaining_study_days}"
+            f"📅 Общее количество дней: {count_total_days(today)} дней\n"
+            f"📘 Только учебные дни: {count_study_days(today)}"
         )
 
-        # отправка всем
-        for user_id in subscribed_users:
+        for user_id in list(subscribed_users):
             try:
                 await bot.send_message(user_id, text)
-            except:
-                pass
+            except Exception as e:
+                # логируем в stdout, чтобы отладить
+                print(f"Failed to send to {user_id}: {e}")
 
+        # Ждём 24 часа (можно улучшить планировщиком)
         await asyncio.sleep(86400)
-
-
-# ==============================================
-#              ЗАПУСК БОТА
-# ==============================================
-
-async def run_bot():
-    # важно для Render (выключает webhook)
-    await bot.delete_webhook(drop_pending_updates=True)
-
-    # запускаем уведомления
-    asyncio.create_task(daily_notifications())
-
-    # запускаем polling
-
-    await dp.start_polling(bot)

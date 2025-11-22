@@ -1,11 +1,14 @@
 services:
-  - type: worker
+  - type: web
     name: tg-bot
     env: python
     plan: hobby
-    buildCommand: "pip install -r requirements.txt"
-    startCommand: "uvicorn main:app --host 0.0.0.0 --port 10000"
+    buildCommand: "pip install --no-cache-dir -r requirements.txt"
+    startCommand: "uvicorn main:app --host 0.0.0.0 --port $PORT"
     autoDeploy: true
     envVars:
       - key: TG_TOKEN
+        sync: false
+      - key: WEBHOOK_URL
+        # value: https://your-service-name.onrender.com
         sync: false
