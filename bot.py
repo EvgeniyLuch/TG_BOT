@@ -66,14 +66,15 @@ def count_study_days(today):
 async def start_handler(message: types.Message):
     subscribed_users.add(message.chat.id)
     await message.answer(
-        "Ты подписался на ежедневные уведомления! Чтобы выключить — напиши /stop.\n"
+        "Ну и нахера тебе это? Просто считать дни, как заключенный - это вообще то странно.\n"
+        "Чтобы выключить — напиши /stop.\n"
         "Статистика по дням — напиши /stat"
     )
 
 @dp.message(Command("stop"))
 async def stop_handler(message: types.Message):
     subscribed_users.discard(message.chat.id)
-    await message.answer("Уведомления выключены.")
+    await message.answer("Решение здорового человека!")
 
 @dp.message(Command("stat"))
 async def stat_handler(message: types.Message):
@@ -82,17 +83,17 @@ async def stat_handler(message: types.Message):
     remaining_study_days = count_study_days(today)
 
     if is_study_day(today):
-        base = "Сегодня учебный день."
+        base = "Сегодня учебный день(((("
     elif is_weekend(today):
-        base = "Сегодня выходной."
+        base = "Сегодня выходной!!!"
     elif is_winter_break(today):
-        base = "Сейчас зимние каникулы."
+        base = "Сейчас зимние каникулы!!!"
     elif is_summer_break(today):
-        base = "Сейчас летние каникулы."
+        base = "Сейчас летние каникулы!!!"
     elif is_holiday(today):
-        base = "Сегодня праздник."
+        base = "Сегодня праздник!!!"
     else:
-        base = "Сегодня учёбы нет."
+        base = "Сегодня учёбы нет!!!"
 
     text = (
         f"{base}\n\n"
@@ -136,3 +137,4 @@ async def daily_notifications():
 
         # Ждём 24 часа (можно улучшить планировщиком)
         await asyncio.sleep(86400)
+
