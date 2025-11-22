@@ -4,7 +4,7 @@ services:
     env: python
     plan: hobby
     buildCommand: "pip install -r requirements.txt"
-    startCommand: "python bot.py"
+    startCommand: "python bot_run.py"
     autoDeploy: true
     envVars:
       - key: TG_TOKEN
