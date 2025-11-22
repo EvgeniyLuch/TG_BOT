@@ -1,9 +1,0 @@
-meta:
-  environment: python
-  toolchain:
-    name: pip
-runtime:
-  python: "3.11.9"
-processes:
-  web:
-    command: python bot.py
