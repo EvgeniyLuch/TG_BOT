@@ -78,7 +78,8 @@ async def stop_handler(message: types.Message):
 
 @dp.message(Command("stat"))
 async def stat_handler(message: types.Message):
-    today = datetime.datetime.now().date()
+    UZ_OFFSET = 5  # Узбекистан UTC+5
+    today = (datetime.datetime.utcnow() + datetime.timedelta(hours=UZ_OFFSET)).date()
     remaining_days = count_total_days(today)
     remaining_study_days = count_study_days(today)
 
@@ -108,7 +109,7 @@ async def daily_notifications():
         now = datetime.datetime.now()
 
         # целевое время - 09:00
-        target = now.replace(hour=8, minute=30, second=0, microsecond=0)
+        target = now.replace(hour=3, minute=30, second=0, microsecond=0)
 
         # если уже позже 09:00 — перенос на завтра
         if now > target:
@@ -147,4 +148,5 @@ async def daily_notifications():
                 await bot.send_message(user_id, text)
             except Exception as e:
                 print(f"Failed to send to {user_id}: {e}")
+
 
