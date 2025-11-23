@@ -102,12 +102,25 @@ async def stat_handler(message: types.Message):
     )
     await message.answer(text)
 
-# ---- daily notifications (фон) ----
+# ---- daily notifications (НОВАЯ ВЕРСИЯ) ----
 async def daily_notifications():
-    # Фоновая задача, запускается в main.on_startup
     while True:
         now = datetime.datetime.now()
-        today = now.date()
+
+        # целевое время - 09:00
+        target = now.replace(hour=9, minute=0, second=0, microsecond=0)
+
+        # если уже позже 09:00 — перенос на завтра
+        if now > target:
+            target += datetime.timedelta(days=1)
+
+        # ждём до следующей отправки
+        wait_seconds = (target - now).total_seconds()
+        print(f"Next notification in {wait_seconds / 3600:.2f} hours")
+        await asyncio.sleep(wait_seconds)
+
+        # ---- формируем сообщение ----
+        today = datetime.date.today()
 
         if is_study_day(today):
             base = "📚 Ещё минус один учебный день!"
@@ -128,13 +141,9 @@ async def daily_notifications():
             f"📘 Только учебные дни: {count_study_days(today)}"
         )
 
+        # ---- отправляем ----
         for user_id in list(subscribed_users):
             try:
                 await bot.send_message(user_id, text)
             except Exception as e:
-                # логируем в stdout, чтобы отладить
                 print(f"Failed to send to {user_id}: {e}")
-
-        # Ждём 24 часа (можно улучшить планировщиком)
-        await asyncio.sleep(86400)
-
