@@ -169,7 +169,7 @@ async def daily_notifications():
         today = uz_today()
 
         # ТВОЁ ВРЕМЯ УВЕДОМЛЕНИЯ — УСТАНОВИ ЛЮБОЕ
-        target = now.replace(hour=11, minute=41, second=0, microsecond=0)
+        target = now.replace(hour=8, minute=30, second=0, microsecond=0)
 
         # Если бот был перезапущен ПОСЛЕ 09:05 — отправить сразу
         if now > target:
@@ -189,17 +189,17 @@ async def daily_notifications():
 
 async def send_daily_message(today):
     if is_study_day(today):
-        base = "📚 Ещё минус один учебный день!"
+        base = "🇮🇱🍆 Ещё один блятский день учебы."
     elif is_weekend(today):
-        base = "😎 Сегодня выходной, хорошенько отдохни!"
+        base = " 🗽🚬Сегодня выходной, хорошенько отдохни!"
     elif is_winter_break(today):
-        base = "❄️ Зимние каникулы! Учёбы нет!"
+        base = "💰🍻 Зимние каникулы! Нахуй учебу! "
     elif is_summer_break(today):
-        base = "☀️ Летние каникулы!"
+        base = " Летние каникулы!"
     elif is_holiday(today):
-        base = "🎉 Праздник! Учёбы нет!"
+        base = "🎃🥞 Праздник! Учёбы нет!"
     else:
-        base = "Сегодня нет учёбы!"
+        base =⚔️ "Сегодня нет учёбы!"
 
     text = (
         f"{base}\n\n"
@@ -212,4 +212,5 @@ async def send_daily_message(today):
             await bot.send_message(user_id, text)
         except Exception as e:
             print(f"Failed to send to {user_id}: {e}")
+
 
