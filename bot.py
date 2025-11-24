@@ -115,6 +115,7 @@ async def stat_handler(message: types.Message):
 
 # ---- daily notifications (исправлено) ----
 async def daily_notifications():
+    print("DEBUG: Render sees UZ time =", uz_now())
     while True:
         now = uz_now()
 
@@ -157,6 +158,7 @@ async def daily_notifications():
                 await bot.send_message(user_id, text)
             except Exception as e:
                 print(f"Failed to send to {user_id}: {e}")
+
 
 
 
