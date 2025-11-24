@@ -119,7 +119,7 @@ async def daily_notifications():
         now = uz_now()
 
         # Нужное время — 09:00 по Узбекистану
-        target = now.replace(hour=8, minute=3, second=0, microsecond=0)
+        target = now.replace(hour=8, minute=0, second=0, microsecond=0)
 
         if now > target:
             target += datetime.timedelta(days=1)
@@ -157,3 +157,4 @@ async def daily_notifications():
                 await bot.send_message(user_id, text)
             except Exception as e:
                 print(f"Failed to send to {user_id}: {e}")
+
