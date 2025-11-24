@@ -115,21 +115,58 @@ async def stat_handler(message: types.Message):
 
 # ---- daily notifications (исправлено) ----
 async def daily_notifications():
-    print("DEBUG: Render sees UZ time =", uz_now())
     while True:
         now = uz_now()
+        today = uz_today()
 
-        # Нужное время — 09:00 по Узбекистану
-        target = now.replace(hour=9, minute=5, second=0, microsecond=0)
+        # Время уведомления — 09:05 по Узбекистану
+        target = now.replace(hour=11, minute=20, second=0, microsecond=0)
 
+        # --- 1) Если бот запустился ПОСЛЕ 09:05 ---
         if now > target:
+            print("Missed scheduled time — sending NOW")
+            await send_daily_message(today)
+
+            # теперь считаем следующее уведомление завтра
             target += datetime.timedelta(days=1)
 
+        # --- 2) Ждём ближайшее 09:05 ---
         wait_seconds = (target - now).total_seconds()
         print(f"Next notification in {wait_seconds/3600:.2f} hours (UZ time)")
-
         await asyncio.sleep(wait_seconds)
 
+        # --- 3) В 09:05 отправляем уведомление ---
+        today = uz_today()
+        await send_daily_message(today)
+
+
+async def send_daily_message(today):
+    # выбираем текст
+    if is_study_day(today):
+        base = "📚 Ещё минус один учебный день!"
+    elif is_weekend(today):
+        base = "😎 Сегодня выходной, хорошенько отдохни!"
+    elif is_winter_break(today):
+        base = "❄️ Зимние каникулы! Учёбы нет!"
+    elif is_summer_break(today):
+        base = "☀️ Летние каникулы!"
+    elif is_holiday(today):
+        base = "🎉 Праздник! Учёбы нет!"
+    else:
+        base = "Сегодня нет учёбы!"
+
+    text = (
+        f"{base}\n\n"
+        f"📅 Общее количество дней: {count_total_days(today)} дней\n"
+        f"📘 Только учебные дни: {count_study_days(today)}"
+    )
+
+    # рассылаем всем подписчикам
+    for user_id in list(subscribed_users):
+        try:
+            await bot.send_message(user_id, text)
+        except Exception as e:
+            print(f"Failed to send to {user_id}: {e}")
         # Формируем сообщение
         today = uz_today()
 
@@ -158,6 +195,7 @@ async def daily_notifications():
                 await bot.send_message(user_id, text)
             except Exception as e:
                 print(f"Failed to send to {user_id}: {e}")
+
 
 
 
