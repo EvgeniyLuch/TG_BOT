@@ -199,7 +199,7 @@ async def send_daily_message(today):
     elif is_holiday(today):
         base = "🎃🥞 Праздник! Учёбы нет!"
     else:
-        base =⚔️ "Сегодня нет учёбы!"
+        base = "⚔️🏴‍☠️Сегодня нет учёбы!"
 
     text = (
         f"{base}\n\n"
@@ -212,5 +212,6 @@ async def send_daily_message(today):
             await bot.send_message(user_id, text)
         except Exception as e:
             print(f"Failed to send to {user_id}: {e}")
+
 
 
