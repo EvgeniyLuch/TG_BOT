@@ -139,17 +139,17 @@ async def stat_handler(message: types.Message):
     remaining_study_days = count_study_days(today)
 
     if is_study_day(today):
-        base = "Сегодня учебный день(((("
+        base = "☠️🍒Сегодня учебный день(((("
     elif is_weekend(today):
-        base = "Сегодня выходной!!!"
+        base = "🍀🕎Сегодня отдыхаем!!!"
     elif is_winter_break(today):
-        base = "Сейчас зимние каникулы!!!"
+        base = "🏳️‍⚧️📈Сейчас зимние каникулы!!!"
     elif is_summer_break(today):
-        base = "Сейчас летние каникулы!!!"
+        base = "🌡️🍾Сейчас летние каникулы!!!"
     elif is_holiday(today):
-        base = "Сегодня праздник!!!"
+        base = "🐢🤌Сегодня праздник!!!"
     else:
-        base = "Сегодня учёбы нет!!!"
+        base = "😈🌵Сегодня учёбы нет!!!"
 
     text = (
         f"{base}\n\n"
@@ -195,9 +195,9 @@ async def send_daily_message(today):
     elif is_winter_break(today):
         base = "💰🍻 Зимние каникулы! Нахуй учебу! "
     elif is_summer_break(today):
-        base = " Летние каникулы!"
+        base = " Летние каникулы! Забей на всё!"
     elif is_holiday(today):
-        base = "🎃🥞 Праздник! Учёбы нет!"
+        base = "🎃🥞 Праздник! Учёба идет нахер!"
     else:
         base = "⚔️🏴‍☠️Сегодня нет учёбы!"
 
@@ -212,6 +212,7 @@ async def send_daily_message(today):
             await bot.send_message(user_id, text)
         except Exception as e:
             print(f"Failed to send to {user_id}: {e}")
+
 
 
 
