@@ -1,7 +1,7 @@
-# bot.py
 import datetime
 import asyncio
 import os
+import json
 from aiogram import Bot, Dispatcher, types
 from aiogram.filters import Command
 
@@ -22,34 +22,68 @@ UZ_HOLIDAYS = {
 bot = Bot(token=API_TOKEN)
 dp = Dispatcher()
 
-# Подписанные пользователи (в памяти)
-subscribed_users = set()
+# ===============================
+#   ХРАНЕНИЕ ПОДПИСЧИКОВ
+# ===============================
 
-# --------------------------
-# ВРЕМЯ УЗБЕКИСТАНА
-# --------------------------
+USERS_FILE = "users.json"
+
+
+def load_users():
+    try:
+        with open(USERS_FILE, "r", encoding="utf-8") as f:
+            return set(json.load(f))
+    except:
+        return set()
+
+
+def save_users():
+    try:
+        with open(USERS_FILE, "w", encoding="utf-8") as f:
+            json.dump(list(subscribed_users), f)
+    except Exception as e:
+        print("Failed to save users:", e)
+
+
+# Загружаем подписчиков при старте
+subscribed_users = load_users()
+
+
+# ===============================
+#     ВРЕМЯ УЗБЕКИСТАНА
+# ===============================
+
 def uz_now():
     return datetime.datetime.utcnow() + datetime.timedelta(hours=5)
+
 
 def uz_today():
     return uz_now().date()
 
 
-# ---- календарная логика ----
+# ===============================
+#     ЛОГИКА КАЛЕНДАРЯ
+# ===============================
+
 def is_holiday(date: datetime.date):
     return (date.month, date.day) in UZ_HOLIDAYS
+
 
 def is_winter_break(date):
     return date.month == 1
 
+
 def is_summer_break(date):
     return date.month in (6, 7, 8)
+
 
 def is_end_of_year_break(date):
     return date.month == 12 and date.day >= 28
 
+
 def is_weekend(date):
     return date.weekday() >= 5
+
 
 def is_study_day(date):
     if is_weekend(date): return False
@@ -59,8 +93,10 @@ def is_study_day(date):
     if is_end_of_year_break(date): return False
     return True
 
+
 def count_total_days(today):
     return (END_DATE - today).days
+
 
 def count_study_days(today):
     days = 0
@@ -71,20 +107,30 @@ def count_study_days(today):
         d += datetime.timedelta(days=1)
     return days
 
-# ---- хендлеры ----
+
+# ===============================
+#          ХЕНДЛЕРЫ
+# ===============================
+
 @dp.message(Command("start"))
 async def start_handler(message: types.Message):
     subscribed_users.add(message.chat.id)
+    save_users()
+
     await message.answer(
         "Ну и нахера тебе это? Просто считать дни, как заключенный - это вообще то странно.\n"
         "Чтобы выключить — напиши /stop.\n"
         "Статистика по дням — напиши /stat"
     )
 
+
 @dp.message(Command("stop"))
 async def stop_handler(message: types.Message):
     subscribed_users.discard(message.chat.id)
+    save_users()
+
     await message.answer("Решение здорового человека!")
+
 
 @dp.message(Command("stat"))
 async def stat_handler(message: types.Message):
@@ -113,35 +159,35 @@ async def stat_handler(message: types.Message):
     await message.answer(text)
 
 
-# ---- daily notifications (исправлено) ----
+# ===============================
+#     ЕЖЕДНЕВНЫЕ УВЕДОМЛЕНИЯ
+# ===============================
+
 async def daily_notifications():
     while True:
         now = uz_now()
         today = uz_today()
 
-        # Время уведомления — 09:05 по Узбекистану
-        target = now.replace(hour=11, minute=20, second=0, microsecond=0)
+        # ТВОЁ ВРЕМЯ УВЕДОМЛЕНИЯ — УСТАНОВИ ЛЮБОЕ
+        target = now.replace(hour=9, minute=5, second=0, microsecond=0)
 
-        # --- 1) Если бот запустился ПОСЛЕ 09:05 ---
+        # Если бот был перезапущен ПОСЛЕ 09:05 — отправить сразу
         if now > target:
             print("Missed scheduled time — sending NOW")
             await send_daily_message(today)
-
-            # теперь считаем следующее уведомление завтра
             target += datetime.timedelta(days=1)
 
-        # --- 2) Ждём ближайшее 09:05 ---
         wait_seconds = (target - now).total_seconds()
         print(f"Next notification in {wait_seconds/3600:.2f} hours (UZ time)")
+
         await asyncio.sleep(wait_seconds)
 
-        # --- 3) В 09:05 отправляем уведомление ---
+        # ВО ВРЕМЯ — отправляем
         today = uz_today()
         await send_daily_message(today)
 
 
 async def send_daily_message(today):
-    # выбираем текст
     if is_study_day(today):
         base = "📚 Ещё минус один учебный день!"
     elif is_weekend(today):
@@ -161,42 +207,8 @@ async def send_daily_message(today):
         f"📘 Только учебные дни: {count_study_days(today)}"
     )
 
-    # рассылаем всем подписчикам
     for user_id in list(subscribed_users):
         try:
             await bot.send_message(user_id, text)
         except Exception as e:
             print(f"Failed to send to {user_id}: {e}")
-        # Формируем сообщение
-        today = uz_today()
-
-        if is_study_day(today):
-            base = "📚 Ещё минус один учебный день!"
-        elif is_weekend(today):
-            base = "😎 Сегодня выходной, хорошенько отдохни!"
-        elif is_winter_break(today):
-            base = "❄️ Зимние каникулы! Учёбы нет!"
-        elif is_summer_break(today):
-            base = "☀️ Летние каникулы!"
-        elif is_holiday(today):
-            base = "🎉 Праздник! Учёбы нет!"
-        else:
-            base = "Сегодня нет учёбы!"
-
-        text = (
-            f"{base}\n\n"
-            f"📅 Общее количество дней: {count_total_days(today)} дней\n"
-            f"📘 Только учебные дни: {count_study_days(today)}"
-        )
-
-        # Рассылка
-        for user_id in list(subscribed_users):
-            try:
-                await bot.send_message(user_id, text)
-            except Exception as e:
-                print(f"Failed to send to {user_id}: {e}")
-
-
-
-
-
