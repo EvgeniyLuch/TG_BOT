@@ -169,7 +169,7 @@ async def daily_notifications():
         today = uz_today()
 
         # ТВОЁ ВРЕМЯ УВЕДОМЛЕНИЯ — УСТАНОВИ ЛЮБОЕ
-        target = now.replace(hour=9, minute=5, second=0, microsecond=0)
+        target = now.replace(hour=11, minute=41, second=0, microsecond=0)
 
         # Если бот был перезапущен ПОСЛЕ 09:05 — отправить сразу
         if now > target:
@@ -212,3 +212,4 @@ async def send_daily_message(today):
             await bot.send_message(user_id, text)
         except Exception as e:
             print(f"Failed to send to {user_id}: {e}")
+
