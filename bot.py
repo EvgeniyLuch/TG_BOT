@@ -169,13 +169,12 @@ async def daily_notifications():
         today = uz_today()
 
         # ТВОЁ ВРЕМЯ УВЕДОМЛЕНИЯ — УСТАНОВИ ЛЮБОЕ
-        target = now.replace(hour=8, minute=30, second=0, microsecond=0)
+        target = now.replace(hour=8, minute=32, second=0, microsecond=0)
 
         # Если бот был перезапущен ПОСЛЕ 09:05 — отправить сразу
         if now > target:
-            print("Missed scheduled time — sending NOW")
-            await send_daily_message(today)
-            target += datetime.timedelta(days=1)
+    # Уже пропустили — переносим на завтра, НО НЕ ОТПРАВЛЯЕМ СЕЙЧАС
+    target += datetime.timedelta(days=1)
 
         wait_seconds = (target - now).total_seconds()
         print(f"Next notification in {wait_seconds/3600:.2f} hours (UZ time)")
@@ -212,6 +211,7 @@ async def send_daily_message(today):
             await bot.send_message(user_id, text)
         except Exception as e:
             print(f"Failed to send to {user_id}: {e}")
+
 
 
 
